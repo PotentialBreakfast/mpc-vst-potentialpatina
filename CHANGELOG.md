@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.3 (2026-11)
+- New look: Barlow fonts, raised panels with soft shadows, glowing amber knob arcs, even-sized button labels and darker display wells.
+
 ## 1.0.2 (2026-11)
 - First public release.
 - Noise, Wobble, Drive, Digital, Tone and Space sections with a MAGNITUDE knob.

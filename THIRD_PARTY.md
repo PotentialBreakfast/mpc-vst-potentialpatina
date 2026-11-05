@@ -36,6 +36,6 @@ header names another licence. Plugins listed in the catalog are separate
 projects with their own licences.
 ```
 
-## Font
+## Fonts – SIL Open Font License 1.1
 
-Button labels are drawn with Titillium Web (SIL Open Font License 1.1), bundled with mpc-vst-plugins.
+**Barlow** and **Barlow Condensed** by Jeremy Tribby (https://github.com/jpt/barlow), from Google Fonts. The `.ttf` files and the licence (`OFL-Barlow.txt`) are in `vst/skin/fonts/`. They are used to draw the plugin's page; the fonts themselves are not changed.

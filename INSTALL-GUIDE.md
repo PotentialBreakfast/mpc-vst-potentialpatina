@@ -21,7 +21,7 @@ Also check:
 The free **MPC Plugin Installer** from the Open MPC project does everything from a page on your computer, so there's nothing to type.
 
 1. **Get the installer.** Download it for Windows, Mac or Linux from the [Open MPC website](https://open-mpc.github.io/) ([source and releases](https://github.com/sd88me/mpc-vst-plugins/releases)). It's one file, with nothing to set up.
-2. **Get the plugin.** Go to this project's [**Releases**](../../releases) page and download the zip that ends in **`-mpc-armv7.zip`**, for example `PotentialPatina-1.0.2-mpc-armv7.zip`. **Don't unzip it.**
+2. **Get the plugin.** Go to this project's [**Releases**](../../releases) page and download the zip that ends in **`-mpc-armv7.zip`**, for example `PotentialPatina-1.0.3-mpc-armv7.zip`. **Don't unzip it.**
 3. **Save your project on the MPC.** Installing restarts the MPC app.
 4. **Open the installer and Connect** to your MPC (it asks for the MPC's address).
 5. **Drop the zip** onto the installer's page, tick it, choose where to put it (a USB drive or the internal drive), and press **Install**.
@@ -38,19 +38,19 @@ You need the MPC's **IP address** (shown in the MPC's network/Wi-Fi settings) an
 1. Download the `-mpc-armv7.zip` from [**Releases**](../../releases). Leave it zipped.
 2. Copy it to the MPC. On your computer, in a terminal (on Windows use **PowerShell**), from the folder the zip is in, run:
    ```
-   scp PotentialPatina-1.0.2-mpc-armv7.zip root@<your-mpc-ip>:/tmp/
+   scp PotentialPatina-1.0.3-mpc-armv7.zip root@<your-mpc-ip>:/tmp/
    ```
 3. Log in to the MPC and install. **Save your project first**, because this restarts the MPC app:
    ```
    ssh root@<your-mpc-ip>
-   cd /tmp && unzip -o PotentialPatina-1.0.2-mpc-armv7.zip
-   sh PotentialPatina-1.0.2/install.sh -t /media/<your-drive>/Synths
+   cd /tmp && unzip -o PotentialPatina-1.0.3-mpc-armv7.zip
+   sh PotentialPatina-1.0.3/install.sh -t /media/<your-drive>/Synths
    ```
    `-t` is the `Synths` folder on the drive you keep plugins on, for example a USB stick. Leave it out to use the internal drive.
 
 **Tips**
 - **Unzip on the MPC, not on Windows.** Windows unzipping loses permissions the installer needs.
-- **Remove it later** with `sh /tmp/PotentialPatina-1.0.2/uninstall.sh` (unzip it again first if `/tmp` was cleared).
+- **Remove it later** with `sh /tmp/PotentialPatina-1.0.3/uninstall.sh` (unzip it again first if `/tmp` was cleared).
 - **Reference:** `INSTALL.md` inside the zip has all the options.
 
 ---
