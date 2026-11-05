@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.4 (2026-11)
+- The plugin's name on its page now reads **PotentialPatina** (was all capitals), matching its name in the MPC's plugin list. Nothing else changed.
+
 ## 1.0.3 (2026-11)
 - New look: Barlow fonts, raised panels with soft shadows, glowing amber knob arcs, even-sized button labels and darker display wells.
 
