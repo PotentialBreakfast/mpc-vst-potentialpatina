@@ -170,6 +170,16 @@
    "max": 100,
    "default": 50,
    "unit": "%"
+  },
+  {
+   "key": "theme",
+   "name": "Look",
+   "options": [
+    "Print Plate",
+    "Night Rack",
+    "Colour Block"
+   ],
+   "default": 0
   }
  ]
 }

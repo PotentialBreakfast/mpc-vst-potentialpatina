@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "engine.h"
+#include "../shared/looks/potential_theme.h"   /* the LOOK switch (parameter "theme") */
 
 #define FS 44100.0f
 #define PI_F 3.14159265f
@@ -75,10 +76,13 @@ typedef struct {
     float tilt_lp[2];
     /* space */
     comb_t comb[2][4]; ap_t ap[2][2];
+    pt_theme_t theme;                  /* which look MPC loads next time: kept out of reset() and of the saved state */
 } patina_t;
 
 static void reset(patina_t *s) {
+    pt_theme_t theme = s->theme;
     memset(s, 0, sizeof *s);
+    s->theme = theme;
     for (int i = 0; i < NP; i++) s->p[i] = PDEF[i].def;
     s->rng[0] = 0x1234567u; s->rng[1] = 0x89abcdefu; s->rng[2] = 0x2468aceu;
     for (int c = 0; c < 2; c++) {
@@ -92,9 +96,8 @@ static void reset(patina_t *s) {
 }
 
 static void *create(const char *data_dir) {
-    (void)data_dir;
-    patina_t *s = malloc(sizeof *s);
-    if (s) reset(s);
+    patina_t *s = calloc(1, sizeof *s);
+    if (s) { reset(s); pt_theme_init(&s->theme, data_dir); }
     return s;
 }
 static void destroy(void *inst) { free(inst); }
@@ -107,6 +110,7 @@ static int find(const char *key) {
 
 static void set_param(void *inst, const char *key, const char *val) {
     patina_t *s = inst;
+    if (pt_theme_set(&s->theme, key, val)) return;
     if (!strcmp(key, "state")) {   /* "key=value;key=value;..." */
         char tmp[1024]; snprintf(tmp, sizeof tmp, "%s", val);
         for (char *tok = strtok(tmp, ";"); tok; tok = strtok(NULL, ";")) {
@@ -124,6 +128,7 @@ static void set_param(void *inst, const char *key, const char *val) {
 
 static int get_param(void *inst, const char *key, char *buf, int buf_len) {
     patina_t *s = inst;
+    { int n = pt_theme_get(&s->theme, key, buf, buf_len); if (n) return n; }
     if (!strcmp(key, "state")) {
         int n = 0;
         for (int i = 0; i < NP && n < buf_len; i++) n += snprintf(buf + n, buf_len - n, "%s=%g;", PDEF[i].key, (double)s->p[i]);
