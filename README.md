@@ -4,7 +4,7 @@
 
 ![PotentialPatina's page on the MPC (new look)](docs/images/potentialpatina.png)
 
-*Insert effect · MPC OS 3.x · Gen1 and Gen2 · v1.1.1*
+*Insert effect · MPC OS 3.x · Gen1 and Gen2 · v1.1.2*
 
 Inspired by the "retro colour" style of plugin made popular on computers. Not affiliated with any of them.
 

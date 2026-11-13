@@ -107,11 +107,12 @@ jobs:
       - name: Package and check
         run: |
           K=$GITHUB_WORKSPACE/kit
+          BENCH=; [ -f vst/bench.txt ] && BENCH="--bench vst/bench.txt"   # the CPU figure measured on a Gen1 MPC
           python3 $K/tools/release.py --so vst/build/potentialpatina.so \
             --skin "vst/build/skin/PotentialBreaks - VST - PotentialPatina" \
             --entry vst/build/pluginlist-entry.xml --version ${{ steps.t.outputs.version }} \
             --id potentialpatina --repo ${{ github.repository }} --license MIT \
-            --about "Retro-colour insert effect: vinyl and tape noise, wobble, drive, bit-crush, tone and room in one box." -o $GITHUB_WORKSPACE/dist
+            --about "Retro-colour insert effect: vinyl and tape noise, wobble, drive, bit-crush, tone and room in one box." $BENCH -o $GITHUB_WORKSPACE/dist
           python3 $K/tools/catalog_check.py $GITHUB_WORKSPACE/dist/*.zip --catalog
           cd $GITHUB_WORKSPACE/dist && sha256sum *.zip | tee SHA256SUMS
 
