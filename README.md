@@ -17,13 +17,15 @@ Free and open source (MIT), made by **PotentialBreaks**. It runs inside the MPC 
 | Section | What it adds |
 |---|---|
 | **MAGNITUDE / MIX / OUTPUT** | Fade the whole effect in and out, blend it with the dry sound, set the level |
-| **NOISE** | Vinyl crackle, tape hiss or mains hum |
+| **NOISE** | Vinyl crackle, tape hiss or mains hum. **DUCK** turns the noise down while the music plays, so the crackle sits under the beat and comes up in the gaps |
 | **WOBBLE** | Tape wow and flutter (pitch drift) |
 | **DRIVE** | Tape, tube or cassette saturation, level-matched so it doesn't just get louder |
 | **DIGITAL** | Bit depth and sample-rate reduction, for the old-sampler crunch |
 | **TONE** | One dark–bright tilt knob |
 | **SPACE** | A small room |
 | **ROLL** | One tap switches on a random set of sections with random settings. **MILD**, **MEDIUM** or **WILD** under it sets how far it goes |
+| **ERA** | One tap sets all six sections for a sound of its time: **Patina**, **'50s 78**, **'60s 45**, **'70s Tape**, **'80s Sampler**, **'90s Cassette**, **AM Radio** or **VHS** |
+| **AGE** | Clean to fully worn in one move. As it rises the sections come in one after another (tone first, then drive, noise, wobble, and digital and space last). 50 % is the sound as set; above that everything keeps going, well past it |
 
 Each section has its own **ON** switch.
 
@@ -31,7 +33,7 @@ Each section has its own **ON** switch.
 
 ## How to use it
 
-Add it as an **insert effect** on a track, program, pad or bus. It won't be in the instrument list. Start with a preset, then use MAGNITUDE to set how much.
+Add it as an **insert effect** on a track, program, pad or bus. It won't be in the instrument list. Tap an **ERA**, then turn **AGE** to set how worn it sounds. MAGNITUDE fades the whole effect evenly; AGE brings the sections in one by one. The eras are also in the MPC's PRESET menu.
 
 ## Three looks
 

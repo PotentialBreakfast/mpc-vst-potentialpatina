@@ -196,6 +196,37 @@
         "WILD"
       ],
       "default": "MEDIUM"
+    },
+    {
+      "key": "era",
+      "name": "Era",
+      "options": [
+        "PATINA",
+        "'50s 78",
+        "'60s 45",
+        "'70s TAPE",
+        "'80s SAMPLER",
+        "'90s CASSETTE",
+        "AM RADIO",
+        "VHS"
+      ],
+      "default": "PATINA"
+    },
+    {
+      "key": "age",
+      "name": "Age",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "unit": "%"
+    },
+    {
+      "key": "noise_duck",
+      "name": "Noise Duck",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "unit": "%"
     }
   ]
 }

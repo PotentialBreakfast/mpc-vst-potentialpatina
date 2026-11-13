@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 (2026-11)
+- **ERA**: one tap sets all six sections for a sound of its time: Patina, '50s 78, '60s 45, '70s Tape, '80s Sampler, '90s Cassette, AM Radio and VHS. They're in the MPC's PRESET menu too.
+- **AGE**: clean to fully worn in one move. As it rises, the sections come in one after another (tone first, then drive, noise, wobble, and digital and space last). 50 % is the sound exactly as set, so projects from before sound the same; above that everything keeps going, well past it.
+- **DUCK** (NOISE): turns the noise down while the music plays (up to about 26 dB), so the crackle sits under the beat and comes up in the gaps.
+- The six sections are a little shorter to make room for the ERA strip along the bottom. Three parameters were added at the end of the list (Era, Age, Noise Duck); saved projects open as before.
+
 ## 1.2.0 (2026-11)
 - **ROLL**: one tap switches on a random set of sections with random settings, for a new kind of old sound each time. **MILD** keeps it subtle (no digital crunch or room), **MEDIUM** may add them, **WILD** turns most things on and up. OUTPUT is left alone. Keep rolling until you like it, then fine-tune.
 - MAGNITUDE, MIX and OUTPUT moved up a little to make room for it. Two parameters were added at the end of the list (Roll, Roll Wildness); saved projects open as before.

@@ -6,7 +6,9 @@
  *   DIGITAL bit depth and sample-rate reduction
  *   TONE    tilt EQ (dark <-> bright)
  *   SPACE   a small Freeverb-style room
- * then dry/wet MIX and OUTPUT. 44.1 kHz, interleaved int16 stereo, 128-frame blocks (wrapper/engine.h). */
+ * then dry/wet MIX and OUTPUT. 44.1 kHz, interleaved int16 stereo, 128-frame blocks (wrapper/engine.h).
+ * 1.2.0: ERA (one tap sets all six modules for a sound of its time), AGE (clean to fully worn in one move: the modules come
+ * in one after another as it rises, 50 = as set, 100 = well past it), and DUCK (the noise ducks under the music). */
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -27,6 +29,7 @@ enum {
     P_DIG_ON, P_DIG_BITS, P_DIG_RATE,
     P_TONE_ON, P_TONE_TILT,
     P_SPC_ON, P_SPC_AMT, P_SPC_SIZE,
+    P_ERA, P_AGE, P_DUCK,   /* 1.2.0 (after LOOK, DICE and WILD in params.json) */
     NP
 };
 static const struct { const char *key; float def; } PDEF[NP] = {
@@ -37,6 +40,21 @@ static const struct { const char *key; float def; } PDEF[NP] = {
     {"digital_on", 0}, {"digital_bits", 12}, {"digital_rate", 26},
     {"tone_on", 1}, {"tone_tilt", -12},
     {"space_on", 0}, {"space_amt", 25}, {"space_size", 50},
+    {"era", 0}, {"age", 50}, {"noise_duck", 0},
+};
+
+/* ERA: the six modules set for a sound of its time (P_MAG .. P_SPC_SIZE). Option 0 is Patina's own default. */
+#define NERA 8
+static const float ERA[NERA][P_ERA] = {
+    /* mag mix out  noise: on type amt  wobble: on amt rate  drive: on type amt  digital: on bits rate  tone: on tilt  space: on amt size */
+    {100, 85, 0,  1, 0, 19,  1, 18, 30,  1, 0, 23,  0, 12, 26,  1, -12,  0, 18, 50},   /* PATINA */
+    {100, 90, 0,  1, 0, 48,  1, 22, 25,  1, 1, 34,  1, 14, 16,  1, -55,  0, 18, 50},   /* '50s 78: shellac crackle, narrow and dark */
+    {100, 85, 0,  1, 0, 30,  1, 16, 22,  1, 1, 26,  0, 12, 26,  1, -28,  1, 12, 35},   /* '60s 45: vinyl, valve warmth, a little room */
+    {100, 85, 0,  1, 1, 18,  1, 26, 35,  1, 0, 36,  0, 12, 26,  1, -14,  0, 18, 50},   /* '70s TAPE: reel-to-reel hiss and wow */
+    {100, 85, 0,  0, 0, 19,  0, 18, 30,  1, 1, 14,  1, 12, 26,  1,  -8,  0, 18, 50},   /* '80s SAMPLER: 12-bit, 26 kHz */
+    {100, 85, 0,  1, 1, 24,  1, 28, 58,  1, 2, 34,  0, 12, 26,  1, -20,  0, 18, 50},   /* '90s CASSETTE: hiss, flutter, dull top */
+    {100, 90, 0,  1, 2,  9,  1,  8, 70,  1, 1, 40,  1, 14,  9,  1,  10,  0, 18, 50},   /* AM RADIO: narrow, buzzy */
+    {100, 85, 0,  1, 1, 20,  1, 36, 12,  1, 2, 24,  0, 12, 26,  1, -34,  1, 10, 30},   /* VHS: slow warble, soft and dark */
 };
 
 /* ---- small DSP pieces ---- */
@@ -80,6 +98,7 @@ typedef struct {
     int wild;                          /* DICE: 0 MILD, 1 MEDIUM, 2 WILD (saved) */
     uint32_t pending;                  /* parameters a roll changed, to report to MPC (bit i = parameter i) */
     uint32_t dice;                     /* the dice's own random state */
+    float s_age, duck_env;             /* AGE (smoothed), DUCK's level follower */
 } patina_t;
 
 static void reset(patina_t *s) {
@@ -97,7 +116,23 @@ static void reset(patina_t *s) {
     s->s_mag = s->p[P_MAG] / 100.0f; s->s_mix = s->p[P_MIX] / 100.0f; s->s_out = powf(10.0f, s->p[P_OUT] / 20.0f);
     s->s_bits = 16.0f; s->s_rate = 44.1f; s->s_wrate = s->p[P_WOB_RATE] / 100.0f; s->s_size = s->p[P_SPC_SIZE] / 100.0f;
     s->wild = 1; s->dice = 0x9e3779b9u ^ (uint32_t)(uintptr_t)s;
+    s->s_age = s->p[P_AGE] / 100.0f;
 }
+
+static void apply_era(patina_t *s, int n) {
+    if (n < 0 || n >= NERA) return;
+    for (int i = 0; i < P_ERA; i++) s->p[i] = ERA[n][i];
+    s->p[P_ERA] = (float)n;
+    s->pending |= (1u << P_ERA) - 1u;   /* every module setting, for MPC's screen */
+}
+
+/* AGE: how much of a module's setting it gets, a = AGE 0..1. The modules come in one after another (tone first, space
+   last) up to 50 %, which is the setting as it is; from there on they all keep going, to 1.8 times at 100 %. */
+static inline float age_f(float a, float start) {
+    if (a <= 0.5f) { float f = (a - start) / (0.5f - start); return f < 0 ? 0 : f > 1 ? 1 : f; }
+    return 1.0f + (a - 0.5f) * 1.6f;
+}
+static inline float cap1(float x) { return x > 1.0f ? 1.0f : x < -1.0f ? -1.0f : x; }
 
 /* ---- DICE: ROLL makes a new patina; WILD (MILD / MEDIUM / WILD) says how far it goes ---- */
 static float dice_u(patina_t *s) { uint32_t x = s->dice; x ^= x << 13; x ^= x >> 17; x ^= x << 5; s->dice = x; return (x >> 8) / 16777216.0f; }
@@ -128,7 +163,7 @@ static void roll(patina_t *s) {
     s->p[P_SPC_SIZE] = dice_in(s, 20, 80);
     s->p[P_MAG] = dice_in(s, w == 0 ? 60 : 80, 100);
     s->p[P_MIX] = dice_in(s, w == 0 ? 60 : 75, w == 0 ? 85 : 100);
-    s->pending |= (1u << NP) - 1u & ~(1u << P_OUT);   /* everything but OUTPUT */
+    s->pending |= ((1u << P_ERA) - 1u) & ~(1u << P_OUT);   /* every module setting, not OUTPUT */
 }
 
 int mpc_engine_changed(void *inst, char *key, int len) {
@@ -156,6 +191,7 @@ static void set_param(void *inst, const char *key, const char *val) {
     if (pt_theme_set(&s->theme, key, val)) return;
     if (!strcmp(key, "state")) {   /* "key=value;key=value;..." */
         char tmp[1024]; snprintf(tmp, sizeof tmp, "%s", val);
+        s->p[P_AGE] = 50; s->p[P_DUCK] = 0; s->p[P_ERA] = 0;   /* a project from before 1.2.0 sounds as it did */
         for (char *tok = strtok(tmp, ";"); tok; tok = strtok(NULL, ";")) {
             char *eq = strchr(tok, '=');
             if (!eq) continue;
@@ -168,6 +204,11 @@ static void set_param(void *inst, const char *key, const char *val) {
     }
     if (!strcmp(key, "dice")) { if (atof(val) > 0.5) roll(s); return; }   /* a trigger: each press rolls */
     if (!strcmp(key, "wild")) { int w = (int)lroundf((float)atof(val)); s->wild = w < 0 ? 0 : w > 2 ? 2 : w; return; }
+    if (!strcmp(key, "era")) {   /* only on a change: a project reload re-sending the same era keeps its tweaks */
+        int n = (int)lroundf((float)atof(val));
+        if (n != (int)lroundf(s->p[P_ERA])) apply_era(s, n);
+        return;
+    }
     int i = find(key);
     if (i >= 0) s->p[i] = (float)atof(val);
 }
@@ -186,7 +227,7 @@ static int get_param(void *inst, const char *key, char *buf, int buf_len) {
     int i = find(key);
     if (i < 0) return 0;
     if (i == P_NOISE_ON || i == P_NOISE_TYPE || i == P_WOB_ON || i == P_DRV_ON || i == P_DRV_TYPE ||
-        i == P_DIG_ON || i == P_DIG_BITS || i == P_TONE_ON || i == P_SPC_ON)
+        i == P_DIG_ON || i == P_DIG_BITS || i == P_TONE_ON || i == P_SPC_ON || i == P_ERA)
         return snprintf(buf, buf_len, "%d", (int)lroundf(s->p[i]));
     return snprintf(buf, buf_len, "%g", (double)s->p[i]);
 }
@@ -210,19 +251,24 @@ static void process(void *inst, const int16_t *in_lr, int16_t *out_lr, int frame
     float mag_t = s->p[P_MAG] / 100.0f;
     s->s_mag = smooth(s->s_mag, mag_t, k);
     float m = s->s_mag;
+    s->s_age = smooth(s->s_age, s->p[P_AGE] / 100.0f, k);
+    const float ag = s->s_age;
+    const float f_tone = age_f(ag, 0.0f), f_drv = age_f(ag, 0.05f), f_noise = age_f(ag, 0.10f), f_wob = age_f(ag, 0.15f),
+                f_dig = age_f(ag, 0.25f), f_spc = age_f(ag, 0.25f);
     s->s_mix = smooth(s->s_mix, s->p[P_MIX] / 100.0f, k);
     s->s_out = smooth(s->s_out, powf(10.0f, s->p[P_OUT] / 20.0f), k);
-    s->s_noise = smooth(s->s_noise, s->p[P_NOISE_AMT] / 100.0f * m, k);
-    s->s_wob = smooth(s->s_wob, s->p[P_WOB_AMT] / 100.0f * m, k);
+    s->s_noise = smooth(s->s_noise, cap1(s->p[P_NOISE_AMT] / 100.0f * m * f_noise), k);
+    s->s_wob = smooth(s->s_wob, cap1(s->p[P_WOB_AMT] / 100.0f * m * f_wob), k);
     s->s_wrate = smooth(s->s_wrate, s->p[P_WOB_RATE] / 100.0f, k);
-    s->s_drv = smooth(s->s_drv, s->p[P_DRV_AMT] / 100.0f * m, k);
-    /* digital: magnitude 0 = clean (16 bit, 44.1 kHz), 1 = the knobs' settings */
-    float bits_t = 16.0f - (16.0f - s->p[P_DIG_BITS]) * m;
-    float rate_t = 44.1f - (44.1f - s->p[P_DIG_RATE]) * m;
+    s->s_drv = smooth(s->s_drv, cap1(s->p[P_DRV_AMT] / 100.0f * m * f_drv), k);
+    /* digital: magnitude 0 = clean (16 bit, 44.1 kHz), 1 = the knobs' settings; AGE past 50 % takes it further */
+    float md = m * f_dig, mdc = md > 1 ? 1 : md, over = md > 1 ? (md - 1.0f) / 0.8f : 0;
+    float bits_t = 16.0f - (16.0f - s->p[P_DIG_BITS]) * mdc - over * 0.5f * (s->p[P_DIG_BITS] - 4.0f);
+    float rate_t = 44.1f - (44.1f - s->p[P_DIG_RATE]) * mdc - over * 0.5f * (s->p[P_DIG_RATE] - 4.0f);
     s->s_bits = smooth(s->s_bits, bits_t, k);
     s->s_rate = smooth(s->s_rate, rate_t, k);
-    s->s_tilt = smooth(s->s_tilt, s->p[P_TONE_TILT] / 100.0f * m, k);
-    s->s_spc = smooth(s->s_spc, s->p[P_SPC_AMT] / 100.0f * m, k);
+    s->s_tilt = smooth(s->s_tilt, cap1(s->p[P_TONE_TILT] / 100.0f * m * f_tone), k);
+    s->s_spc = smooth(s->s_spc, cap1(s->p[P_SPC_AMT] / 100.0f * m * f_spc), k);
     s->s_size = smooth(s->s_size, s->p[P_SPC_SIZE] / 100.0f, k);
     s->g_noise = smooth(s->g_noise, s->p[P_NOISE_ON] > 0.5f, k);
     s->g_wob = smooth(s->g_wob, s->p[P_WOB_ON] > 0.5f, k);
@@ -240,6 +286,9 @@ static void process(void *inst, const int16_t *in_lr, int16_t *out_lr, int frame
     const float crack_amp = 0.35f * na;
     const float hum_amp = (ntype == 2) ? 0.05f * na : 0;
     const float k_hiss_lp = onepole_k(ntype == 1 ? 9000.0f : 4500.0f), k_hiss_hp = onepole_k(ntype == 1 ? 1500.0f : 250.0f);
+    /* DUCK: the noise goes down while the music plays (up to about 26 dB at 100 %, from about -45 dBFS of music) */
+    const float duck = s->p[P_DUCK] / 100.0f;
+    const float k_da = 1.0f - expf(-1.0f / (0.005f * FS)), k_dr = 1.0f - expf(-1.0f / (0.25f * FS));
 
     /* wobble: depth in samples; rate morphs from slow wow to fast flutter */
     const float wa = s->s_wob;
@@ -274,7 +323,15 @@ static void process(void *inst, const int16_t *in_lr, int16_t *out_lr, int frame
         float x[2] = {dry[0], dry[1]};
 
         /* ---- NOISE (added first, so the rest colours it too) ---- */
+        float lvl = fabsf(dry[0]) > fabsf(dry[1]) ? fabsf(dry[0]) : fabsf(dry[1]);
+        s->duck_env += (lvl - s->duck_env) * (lvl > s->duck_env ? k_da : k_dr);
         if (na > 1e-5f) {
+            float dg = 1.0f;
+            if (duck > 0) {
+                float db = 20.0f * log10f(s->duck_env + 1e-6f);
+                float r = (db + 45.0f) / 30.0f; r = r < 0 ? 0 : r > 1 ? 1 : r;
+                dg = 1.0f - 0.95f * duck * r;
+            }
             float add_mono = 0;
             if (ntype == 0) {
                 if (urand(&s->rng[2]) < crack_rate) {   /* a new click */
@@ -298,7 +355,7 @@ static void process(void *inst, const int16_t *in_lr, int16_t *out_lr, int frame
                 s->hiss_lp[c] += (w - s->hiss_lp[c]) * k_hiss_lp;
                 s->hiss_hp[c] += (s->hiss_lp[c] - s->hiss_hp[c]) * k_hiss_hp;
                 float hiss = (s->hiss_lp[c] - s->hiss_hp[c]) * hiss_amp * 4.0f;
-                x[c] += hiss + add_mono * (c ? 0.92f : 1.0f);
+                x[c] += (hiss + add_mono * (c ? 0.92f : 1.0f)) * dg;
             }
         }
 
