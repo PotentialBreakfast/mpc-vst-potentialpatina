@@ -23,6 +23,7 @@ Free and open source (MIT), made by **PotentialBreaks**. It runs inside the MPC 
 | **DIGITAL** | Bit depth and sample-rate reduction, for the old-sampler crunch |
 | **TONE** | One dark–bright tilt knob |
 | **SPACE** | A small room |
+| **ROLL** | One tap switches on a random set of sections with random settings. **MILD**, **MEDIUM** or **WILD** under it sets how far it goes |
 
 Each section has its own **ON** switch.
 

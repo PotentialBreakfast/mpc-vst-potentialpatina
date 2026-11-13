@@ -77,6 +77,9 @@ typedef struct {
     /* space */
     comb_t comb[2][4]; ap_t ap[2][2];
     pt_theme_t theme;                  /* which look MPC loads next time: kept out of reset() and of the saved state */
+    int wild;                          /* DICE: 0 MILD, 1 MEDIUM, 2 WILD (saved) */
+    uint32_t pending;                  /* parameters a roll changed, to report to MPC (bit i = parameter i) */
+    uint32_t dice;                     /* the dice's own random state */
 } patina_t;
 
 static void reset(patina_t *s) {
@@ -93,6 +96,46 @@ static void reset(patina_t *s) {
     /* start the smoothed values at their targets */
     s->s_mag = s->p[P_MAG] / 100.0f; s->s_mix = s->p[P_MIX] / 100.0f; s->s_out = powf(10.0f, s->p[P_OUT] / 20.0f);
     s->s_bits = 16.0f; s->s_rate = 44.1f; s->s_wrate = s->p[P_WOB_RATE] / 100.0f; s->s_size = s->p[P_SPC_SIZE] / 100.0f;
+    s->wild = 1; s->dice = 0x9e3779b9u ^ (uint32_t)(uintptr_t)s;
+}
+
+/* ---- DICE: ROLL makes a new patina; WILD (MILD / MEDIUM / WILD) says how far it goes ---- */
+static float dice_u(patina_t *s) { uint32_t x = s->dice; x ^= x << 13; x ^= x >> 17; x ^= x << 5; s->dice = x; return (x >> 8) / 16777216.0f; }
+static float dice_in(patina_t *s, float lo, float hi) { return roundf(lo + (hi - lo) * dice_u(s)); }
+static void roll(patina_t *s) {
+    int w = s->wild;
+    /* modules: noise, wobble, drive, digital, tone, space; MILD keeps to the gentle four */
+    enum { NMOD = 6 };
+    static const int MOD_ON[6] = {P_NOISE_ON, P_WOB_ON, P_DRV_ON, P_DIG_ON, P_TONE_ON, P_SPC_ON};
+    static const int CHANCE[3][6] = {{60, 55, 50, 0, 60, 0}, {65, 60, 60, 25, 60, 30}, {85, 80, 80, 55, 70, 55}};
+    static const float AMT[3][2] = {{8, 35}, {15, 60}, {35, 100}};
+    int on = 0;
+    for (int tries = 0; tries < 20 && on < 2 + w; tries++) {   /* at least 2 / 3 / 4 modules on */
+        on = 0;
+        for (int m = 0; m < NMOD; m++) { s->p[MOD_ON[m]] = dice_u(s) * 100.0f < (float)CHANCE[w][m] ? 1.0f : 0.0f; on += (int)s->p[MOD_ON[m]]; }
+    }
+    float lo = AMT[w][0], hi = AMT[w][1];
+    s->p[P_NOISE_TYPE] = (float)(int)(dice_u(s) * (w ? 3.0f : 2.0f));   /* MILD: vinyl or tape, no hum */
+    s->p[P_NOISE_AMT] = dice_in(s, lo, hi);
+    s->p[P_WOB_AMT] = dice_in(s, lo, hi);
+    s->p[P_WOB_RATE] = dice_in(s, 10, w == 2 ? 100 : 60);
+    s->p[P_DRV_TYPE] = (float)(int)(dice_u(s) * 3.0f);
+    s->p[P_DRV_AMT] = dice_in(s, lo, hi);
+    s->p[P_DIG_BITS] = dice_in(s, w == 2 ? 4 : 8, w == 2 ? 10 : 14);
+    s->p[P_DIG_RATE] = dice_in(s, w == 2 ? 6 : 12, w == 2 ? 22 : 32);
+    s->p[P_TONE_TILT] = dice_in(s, w == 0 ? -30 : w == 1 ? -50 : -100, w == 0 ? 10 : w == 1 ? 30 : 60);
+    s->p[P_SPC_AMT] = dice_in(s, lo, hi * 0.7f);
+    s->p[P_SPC_SIZE] = dice_in(s, 20, 80);
+    s->p[P_MAG] = dice_in(s, w == 0 ? 60 : 80, 100);
+    s->p[P_MIX] = dice_in(s, w == 0 ? 60 : 75, w == 0 ? 85 : 100);
+    s->pending |= (1u << NP) - 1u & ~(1u << P_OUT);   /* everything but OUTPUT */
+}
+
+int mpc_engine_changed(void *inst, char *key, int len) {
+    patina_t *s = inst;
+    for (int i = 0; i < NP; i++)
+        if (s->pending & (1u << i)) { s->pending &= ~(1u << i); snprintf(key, len, "%s", PDEF[i].key); return 1; }
+    return 0;
 }
 
 static void *create(const char *data_dir) {
@@ -119,9 +162,12 @@ static void set_param(void *inst, const char *key, const char *val) {
             *eq = 0;
             int i = find(tok);
             if (i >= 0) s->p[i] = (float)atof(eq + 1);
+            else if (!strcmp(tok, "wild")) { int w = atoi(eq + 1); s->wild = w < 0 ? 0 : w > 2 ? 2 : w; }
         }
         return;
     }
+    if (!strcmp(key, "dice")) { if (atof(val) > 0.5) roll(s); return; }   /* a trigger: each press rolls */
+    if (!strcmp(key, "wild")) { int w = (int)lroundf((float)atof(val)); s->wild = w < 0 ? 0 : w > 2 ? 2 : w; return; }
     int i = find(key);
     if (i >= 0) s->p[i] = (float)atof(val);
 }
@@ -132,8 +178,11 @@ static int get_param(void *inst, const char *key, char *buf, int buf_len) {
     if (!strcmp(key, "state")) {
         int n = 0;
         for (int i = 0; i < NP && n < buf_len; i++) n += snprintf(buf + n, buf_len - n, "%s=%g;", PDEF[i].key, (double)s->p[i]);
+        if (n < buf_len) n += snprintf(buf + n, buf_len - n, "wild=%d;", s->wild);
         return n;
     }
+    if (!strcmp(key, "dice")) return snprintf(buf, buf_len, "0");
+    if (!strcmp(key, "wild")) return snprintf(buf, buf_len, "%d", s->wild);
     int i = find(key);
     if (i < 0) return 0;
     if (i == P_NOISE_ON || i == P_NOISE_TYPE || i == P_WOB_ON || i == P_DRV_ON || i == P_DRV_TYPE ||

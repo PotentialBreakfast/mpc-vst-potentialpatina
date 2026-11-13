@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 (2026-11)
+- **ROLL**: one tap switches on a random set of sections with random settings, for a new kind of old sound each time. **MILD** keeps it subtle (no digital crunch or room), **MEDIUM** may add them, **WILD** turns most things on and up. OUTPUT is left alone. Keep rolling until you like it, then fine-tune.
+- MAGNITUDE, MIX and OUTPUT moved up a little to make room for it. Two parameters were added at the end of the list (Roll, Roll Wildness); saved projects open as before.
+
 ## 1.1.2 (2026-11)
 - **CPU figure recorded.** Measured on an MPC One with the Open MPC bench: **PASS**, 5.1% of an audio block at the 99th percentile and 5.9% at worst, so it runs comfortably alongside a full project. It shows on the catalog card and in INSTALL.md.
 - Nothing else changed: same sound, controls and saved projects as 1.1.1.
