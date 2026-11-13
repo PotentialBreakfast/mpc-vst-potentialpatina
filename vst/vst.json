@@ -2,7 +2,7 @@
  "name": "PotentialPatina",
  "vendor": "PotentialBreaks",
  "uid": "PbPt",
- "version": 1100,
+ "version": 1101,
  "so": "potentialpatina.so",
  "params": "params.json",
  "layout": "layout.conf",
