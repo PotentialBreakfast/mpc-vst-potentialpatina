@@ -4,7 +4,7 @@
 
 ![PotentialPatina's page on the MPC (new look)](docs/images/potentialpatina.png)
 
-*Insert effect · MPC OS 3.x · Gen1 and Gen2 · v1.4.0*
+*Insert effect · MPC OS 3.x · Gen1 and Gen2 · v1.5.0*
 
 Inspired by the "retro colour" style of plugin made popular on computers. Not affiliated with any of them.
 
@@ -30,6 +30,10 @@ Free and open source (MIT), made by **PotentialBreaks**. It runs inside the MPC 
 Each section has its own **ON** switch.
 
 **Presets:** Patina, Dusty Vinyl, Worn Tape, Cassette Demo, 12-bit Sampler, Crunchy 8-bit, Old Radio, Basement Room and Clean. They're set fairly subtle, so turn MAGNITUDE or the section knobs up for more.
+
+**USER presets** (USER page): 8 slots of your own. Tap **SAVE**, then a slot, to keep the sound; tap a slot to bring it back. They're kept in `PotentialSuite Presets/PotentialPatina.txt` beside your VST2 Plugins folder, so every project sees them and updates keep them. The same slot number in each PotentialSuite effect makes a chain of your own.
+
+**MANUAL page:** the manual is on the MPC's screen too. Tap **MANUAL**, then the page buttons along the top. The full [PotentialSuite manual](https://github.com/PotentialBreakfast/potential-plugins/blob/main/MANUAL.md) covers every plugin, the FX chains and a developer reference.
 
 ## How to use it
 

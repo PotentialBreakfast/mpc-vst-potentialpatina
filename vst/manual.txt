@@ -1,0 +1,62 @@
+= START
+# PotentialPatina: retro colour
+Instant character for any track: vinyl crackle, tape hiss and wobble, warm drive, bit-crushing, tone and a small room, all set with one big MAGNITUDE knob.
+
+- Add it as an insert effect on a track, program, pad or bus. It is not in the instrument list.
+- Tap an ERA, then turn AGE to set how worn it sounds.
+- MAGNITUDE fades the whole effect evenly. AGE brings the sections in one by one.
+- Each section has its own ON switch.
+
+The full PotentialSuite manual: github.com/PotentialBreakfast/potential-plugins
+
+= CONTROLS
+# Controls
+- MAGNITUDE: fades the whole effect in and out. MIX: blend with the dry sound. OUTPUT: the level.
+- ERA: one tap sets all six sections for a sound of its time.
+- AGE: clean to fully worn in one move. 50 % is the sound as set. Tone comes in first, then drive, noise, wobble, and digital and space last.
+- NOISE: vinyl crackle, tape hiss or mains hum. DUCK turns it down while the music plays, so it comes up in the gaps.
+- WOBBLE: tape wow and flutter (pitch drift).
+- DRIVE: tape, tube or cassette saturation, level-matched so it does not just get louder.
+- DIGITAL: bit depth and sample-rate reduction, for the old-sampler crunch.
+- TONE: one dark to bright tilt knob. SPACE: a small room.
+- ROLL: switches on a random set of sections with random settings. MILD, MEDIUM or WILD sets how far it goes.
+
+= PRESETS
+# Eras and presets
+- ERA (on the page): Patina, '50s 78, '60s 45, '70s Tape, '80s Sampler, '90s Cassette, AM Radio and VHS.
+- MPC's PRESET menu: Patina, Dusty Vinyl, Worn Tape, Cassette Demo, 12-bit Sampler, Crunchy 8-bit, Old Radio, Basement Room and Clean, then the eras, then the four chain presets.
+- The presets are set fairly subtle. Turn MAGNITUDE or the section knobs up for more.
+- Chain presets: Dusty Loop, 90s Stab, Break Bus and Dub Drums. See the CHAINS page.
+
+= CHAINS
+# FX chains
+Put the plugins on a track's inserts in the order shown, then pick the same preset name in each one.
+
+- DUSTY LOOP (soul, jazz and library loops): Bleed > PATINA > Grit. Patina is on '60s 45.
+- 90s STAB (chopped horns, keys and vocal stabs): Grit > Punch > Bleed > PATINA. Patina is on '90s Cassette.
+- BREAK BUS (a boom-bap drum bus): Punch > Grit > Bleed > PATINA. Patina is on '70s Tape.
+- DUB DRUMS (lo-fi dub drums): PATINA > Punch > Bleed > Grit. Patina is on '80s Sampler.
+
+Here, in Grit and in Bleed the name is in the MPC's PRESET menu. In Punch it is on the PRESETS buttons.
+
+Rules of thumb: Punch early, Bleed before Patina so the bleed is aged with the sound, echo and chop last, one noise source per chain, and match levels with OUTPUT before you decide.
+
+= USER
+# User presets
+- To save: open the USER page, tap SAVE, then tap a slot. The slot now reads USER and its number.
+- To load: tap a slot. The slot you loaded last is lit.
+- Saving to a slot that is already filled replaces it straight away.
+- The 8 slots are kept on the drive the plugin is on, in a folder called PotentialSuite Presets. Every project and every copy of the plugin sees them, and updating the plugin keeps them.
+- A chain of your own: save each plugin's part to the same slot number, for example USER 3 in Patina, Grit and Bleed. Later, tap USER 3 in each.
+- A slot keeps the knobs and switches. It does not keep the ROLL setting or the look.
+
+= HELP
+# Good to know
+- Q-Links: MAGNITUDE, AGE, MIX, OUTPUT, TONE, NOISE, WOBBLE and DRIVE, then the section settings on the next bank.
+- Every setting is saved with your project.
+- Looks: Print Plate, Night Rack or Colour Block, on the SETTINGS page. A new look shows the next time the plugin loads.
+- About 7 ms of delay while it is switched on, because of how the wobble works. It can be heard on tight layered drums.
+- Several copies at once, especially with SPACE on, may be a lot for an older MPC.
+- Stereo in, stereo out, at 44.1 kHz.
+
+Ideas, bugs and criticism are all welcome: github.com/PotentialBreakfast/mpc-vst-potentialpatina

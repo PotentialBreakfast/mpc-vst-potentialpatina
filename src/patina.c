@@ -16,6 +16,8 @@
 #include <string.h>
 #include "engine.h"
 #include "../shared/looks/potential_theme.h"   /* the LOOK switch (parameter "theme") */
+#include "../shared/potential_user.h"          /* the USER preset slots */
+#include "../shared/potential_manual.h"        /* the MANUAL tab's page */
 
 #define FS 44100.0f
 #define PI_F 3.14159265f
@@ -95,6 +97,8 @@ typedef struct {
     /* space */
     comb_t comb[2][4]; ap_t ap[2][2];
     pt_theme_t theme;                  /* which look MPC loads next time: kept out of reset() and of the saved state */
+    pu_user_t user;     /* USER preset slots: kept in a file, not in the saved state */
+    pm_manual_t manual; /* the MANUAL tab's page: not part of the sound or the saved state */
     int wild;                          /* DICE: 0 MILD, 1 MEDIUM, 2 WILD (saved) */
     uint32_t pending;                  /* parameters a roll changed, to report to MPC (bit i = parameter i) */
     uint32_t dice;                     /* the dice's own random state */
@@ -168,6 +172,7 @@ static void roll(patina_t *s) {
 
 int mpc_engine_changed(void *inst, char *key, int len) {
     patina_t *s = inst;
+    if (pu_changed(&s->user, key, len)) return 1;
     for (int i = 0; i < NP; i++)
         if (s->pending & (1u << i)) { s->pending &= ~(1u << i); snprintf(key, len, "%s", PDEF[i].key); return 1; }
     return 0;
@@ -175,7 +180,7 @@ int mpc_engine_changed(void *inst, char *key, int len) {
 
 static void *create(const char *data_dir) {
     patina_t *s = calloc(1, sizeof *s);
-    if (s) { reset(s); pt_theme_init(&s->theme, data_dir); }
+    if (s) { reset(s); pt_theme_init(&s->theme, data_dir); pu_init(&s->user, data_dir, "PotentialPatina"); }
     return s;
 }
 static void destroy(void *inst) { free(inst); }
@@ -186,10 +191,23 @@ static int find(const char *key) {
     return -1;
 }
 
+static int get_param(void *inst, const char *key, char *buf, int buf_len);
 static void set_param(void *inst, const char *key, const char *val) {
     patina_t *s = inst;
     if (pt_theme_set(&s->theme, key, val)) return;
-    if (!strcmp(key, "state")) {   /* "key=value;key=value;..." */
+    if (pm_set(&s->manual, key, val)) return;
+    {   /* USER slots: SAVE, then a slot, keeps the sound; a slot brings it back */
+        int un = 0, ur = pu_set(&s->user, key, val, &un);
+        if (ur == PU_SAVE) { char st[PU_STATE_MAX]; get_param(s, "state", st, sizeof st); pu_store(&s->user, un, st, "wild"); }
+        else if (ur == PU_LOAD) {
+            long long quiet = s->user.quiet_until;   /* a slot is not a project: taps stay on */
+            set_param(s, "state", pu_slot(&s->user, un));
+            s->user.quiet_until = quiet; pu_loaded(&s->user, un);
+            s->pending |= (1u << NP) - 1u;   /* move the controls on MPC's screen */
+        }
+        if (ur) return;
+    }
+    if (!strcmp(key, "state")) { pu_quiet(&s->user);   /* "key=value;key=value;..." */
         char tmp[1024]; snprintf(tmp, sizeof tmp, "%s", val);
         s->p[P_AGE] = 50; s->p[P_DUCK] = 0; s->p[P_ERA] = 0;   /* a project from before 1.2.0 sounds as it did */
         for (char *tok = strtok(tmp, ";"); tok; tok = strtok(NULL, ";")) {
@@ -216,6 +234,8 @@ static void set_param(void *inst, const char *key, const char *val) {
 static int get_param(void *inst, const char *key, char *buf, int buf_len) {
     patina_t *s = inst;
     { int n = pt_theme_get(&s->theme, key, buf, buf_len); if (n) return n; }
+    { int pu_n = pu_get(&s->user, key, buf, buf_len); if (pu_n) return pu_n; }
+    { int pm_n = pm_get(&s->manual, key, buf, buf_len); if (pm_n) return pm_n; }
     if (!strcmp(key, "state")) {
         int n = 0;
         for (int i = 0; i < NP && n < buf_len; i++) n += snprintf(buf + n, buf_len - n, "%s=%g;", PDEF[i].key, (double)s->p[i]);
