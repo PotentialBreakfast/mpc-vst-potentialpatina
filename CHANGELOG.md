@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.0 (2026-11)
+- FX chain presets: Dusty Loop, 90s Stab, Break Bus and Dub Drums, in the MPC's PRESET menu. Pick the same name in PotentialPunch, PotentialGrit and PotentialBleed to load the whole chain (see the PotentialSuite page).
+
 ## 1.3.0 (2026-11)
 - **ERA**: one tap sets all six sections for a sound of its time: Patina, '50s 78, '60s 45, '70s Tape, '80s Sampler, '90s Cassette, AM Radio and VHS. They're in the MPC's PRESET menu too.
 - **AGE**: clean to fully worn in one move. As it rises, the sections come in one after another (tone first, then drive, noise, wobble, and digital and space last). 50 % is the sound exactly as set, so projects from before sound the same; above that everything keeps going, well past it.
