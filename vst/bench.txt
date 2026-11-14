@@ -1,2 +1,2 @@
 # MPC TOOLS bench (Open MPC tools/bench.c -j) on an MPC One, MPC OS 3.10.1, MPC running, 2026-11-14, PotentialPatina 1.5.0
-{"plugin": "PotentialPatina", "instrument": 0, "open_ms": 0.4, "p99_pct": 6.4, "max_pct": 8.9, "threads_pct": 0.0, "verdict": "PASS", "triggers": 1, "trigger_max_pct": 5.2}
+{"plugin": "PotentialPatina", "instrument": 0, "open_ms": 0.4, "p99_pct": 6.5, "max_pct": 7.7, "threads_pct": 0.0, "verdict": "PASS", "triggers": 1, "trigger_max_pct": 5.2}
