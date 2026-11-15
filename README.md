@@ -4,7 +4,7 @@
 
 ![PotentialPatina's page on the MPC (new look)](docs/images/potentialpatina.png)
 
-*Insert effect · MPC OS 3.x · Gen1 and Gen2 · v1.5.1*
+*Insert effect · MPC OS 3.x · Gen1 and Gen2 · v1.6.0*
 
 Inspired by the "retro colour" style of plugin made popular on computers. Not affiliated with any of them.
 
@@ -39,9 +39,9 @@ Each section has its own **ON** switch.
 
 Add it as an **insert effect** on a track, program, pad or bus. It won't be in the instrument list. Tap an **ERA**, then turn **AGE** to set how worn it sounds. MAGNITUDE fades the whole effect evenly; AGE brings the sections in one by one. The eras are also in the MPC's PRESET menu.
 
-## Three looks
+## Four looks
 
-PotentialPatina comes in three looks: **Print Plate** (the default), **Night Rack** and **Colour Block**. Open the **SETTINGS** page and tap one of the big LOOK keys. The new look shows the next time the plugin loads: take it off the track and add it again, or load your project again. Your choice is kept on your MPC for every project. The sound and the controls are the same in all three.
+PotentialPatina comes in four looks: **Print Plate** (the default), **Night Rack**, **Colour Block** and **Vintage** (a late-80s drum machine: warm grey panel, cream keys, an amber display). Open the **SETTINGS** page and tap one of the big LOOK keys. The new look shows the next time the plugin loads: take it off the track and add it again, or load your project again. Your choice is kept on your MPC for every project. The sound and the controls are the same in all four.
 
 ## Limitations
 

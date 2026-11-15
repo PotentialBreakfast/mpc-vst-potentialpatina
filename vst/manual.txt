@@ -54,7 +54,7 @@ Rules of thumb: Punch early, Bleed before Patina so the bleed is aged with the s
 # Good to know
 - Q-Links: MAGNITUDE, AGE, MIX, OUTPUT, TONE, NOISE, WOBBLE and DRIVE, then the section settings on the next bank.
 - Every setting is saved with your project.
-- Looks: Print Plate, Night Rack or Colour Block, on the SETTINGS page. A new look shows the next time the plugin loads.
+- Looks: Print Plate, Night Rack, Colour Block or Vintage, on the SETTINGS page. A new look shows the next time the plugin loads.
 - About 7 ms of delay while it is switched on, because of how the wobble works. It can be heard on tight layered drums.
 - Several copies at once, especially with SPACE on, may be a lot for an older MPC.
 - Stereo in, stereo out, at 44.1 kHz.
